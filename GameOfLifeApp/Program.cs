@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using GameOfLife;
 
@@ -265,7 +266,7 @@ namespace GameOfLifeApp
         private static void SeedWithGun(Universe universe)
         {
             // http://en.wikipedia.org/wiki/File:Game_of_life_glider_gun.svg
-            const int originX = -30;
+            const int originX = -45;
             const int originY = 25;
 
             universe.AddSeedCellAt(Coords.Create(originX + 0, originY + 0));
@@ -320,50 +321,59 @@ namespace GameOfLifeApp
             Console.SetCursorPosition(0, OverallBoardSizeY - 1);
         }
 
-        private static IList<Coords> _lastSetOfLiveCells;
+        private static IList<Coords> _previousSetOfLiveCells;
 
         private static bool DrawBoundedUniverse(Universe universe)
         {
-            var numLiveCellsWithinBounds = 0;
+            var nextSetOfLiveCells = new List<Coords>();
 
-            var thisSetOfLiveCells = new List<Coords>();
+            universe.IterateLiveCells(coords =>
+                                          {
+                                              if (Math.Abs(coords.X) <= MaxOffsetFromOriginX &&
+                                                  Math.Abs(coords.Y) <= MaxOffsetFromOriginY)
+                                              {
+                                                  nextSetOfLiveCells.Add(coords);
+                                              }
+                                          });
 
-            universe.IterateLiveCells(
-                coords =>
-                {
-                    if (Math.Abs(coords.X) <= MaxOffsetFromOriginX && Math.Abs(coords.Y) <= MaxOffsetFromOriginY)
-                    {
-                        var drawCell = true;
+            DrawCellsThatHaveComeAlive(_previousSetOfLiveCells, nextSetOfLiveCells);
+            EraseCellsThatHaveDied(_previousSetOfLiveCells, nextSetOfLiveCells);
 
-                        if (_lastSetOfLiveCells != null)
-                        {
-                            drawCell = !_lastSetOfLiveCells.Contains(coords);
-                        }
+            _previousSetOfLiveCells = nextSetOfLiveCells;
 
-                        if (drawCell)
-                        {
-                            DrawCell(coords);
-                        }
+            return nextSetOfLiveCells.Any();
+        }
 
-                        numLiveCellsWithinBounds++;
-                        thisSetOfLiveCells.Add(coords);
-                    }
-                });
-
-            if (_lastSetOfLiveCells != null)
+        private static void DrawCellsThatHaveComeAlive(ICollection<Coords> previousSetOfLiveCells, IEnumerable<Coords> nextSetOfLiveCells)
+        {
+            foreach (var coords in nextSetOfLiveCells)
             {
-                foreach (var coords in _lastSetOfLiveCells)
+                var drawCell = true;
+
+                if (previousSetOfLiveCells != null)
                 {
-                    if (!thisSetOfLiveCells.Contains(coords))
+                    drawCell = !previousSetOfLiveCells.Contains(coords);
+                }
+
+                if (drawCell)
+                {
+                    DrawCell(coords);
+                }
+            }
+        }
+
+        private static void EraseCellsThatHaveDied(IEnumerable<Coords> previousSetOfLiveCells, ICollection<Coords> nextSetOfLiveCells)
+        {
+            if (previousSetOfLiveCells != null)
+            {
+                foreach (var coords in previousSetOfLiveCells)
+                {
+                    if (!nextSetOfLiveCells.Contains(coords))
                     {
                         EraseCell(coords);
                     }
                 }
             }
-
-            _lastSetOfLiveCells = thisSetOfLiveCells;
-
-            return numLiveCellsWithinBounds > 0;
         }
 
         private static void DrawCell(Coords gridCoords)
