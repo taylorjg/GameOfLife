@@ -12,7 +12,7 @@ rendering to the console. This project is the result.
 
 ## Seeds
 
-The console program takes a single command line parameter which identifies the seed pattern:
+The first command line parameter identifies which seed pattern to use:
 
 * 1 - [Blinker](http://en.wikipedia.org/wiki/File:Game_of_life_blinker.gif)
 * 2 - [Toad](http://en.wikipedia.org/wiki/File:Game_of_life_toad.gif)
@@ -25,6 +25,10 @@ The console program takes a single command line parameter which identifies the s
 
 If no parameter is given, the seed defaults to Pulsar.
 
+## Tick Sleep Interval
+
+The optional second parameter controls the sleep interval between ticks. It defaults to 100ms.
+
 ## Links
 
 * [Conway's Game of Life](http://en.wikipedia.org/wiki/Conway's_Game_of_Life)
@@ -33,7 +37,7 @@ If no parameter is given, the seed defaults to Pulsar.
 * [DRL Limited](http://www.drllimited.co.uk/)
 * [DRL's main website - www.appliancesonline.co.uk](http://www.appliancesonline.co.uk/)
 
-## Screenshot of the running program
+## Screenshot of the Running Program
 
 The following screenshot shows the R-pentomino seed after is has stabilised:
 
@@ -42,3 +46,11 @@ The following screenshot shows the R-pentomino seed after is has stabilised:
 The following screenshot shows the Gun seed in action:
 
 ![Screenshot2](https://github.com/taylorjg/GameOfLife/raw/master/Images/GameOfLifeAppConsole2.png)
+
+## Zombies!
+
+I have added support for zombies i.e. cells that have been alive and then died and then come back to life again.
+Zombie cells are displyed in magenta. Normal live cells are displayed in cyan.
+Here is an updated screenshot of the R-pentomino seed showing some zombie cells.
+
+![Screenshot3](https://github.com/taylorjg/GameOfLife/raw/master/Images/GameOfLifeAppConsole3.png)

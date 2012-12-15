@@ -17,7 +17,7 @@ namespace GameOfLifeTests
             grid.MarkLiveCellAt(cellCoords);
 
             // Act
-            var actual = Rules.WillCurrentlyAliveCellBeALiveInTheNextGeneration(grid, cellCoords);
+            var actual = Rules.CurrentlyAliveCellWillStillBeALiveInTheNextGeneration(grid, cellCoords);
 
             // Assert
             Assert.That(actual, Is.False);
@@ -33,7 +33,7 @@ namespace GameOfLifeTests
             grid.MarkLiveCellAt(cellCoords.Above());
 
             // Act
-            var actual = Rules.WillCurrentlyAliveCellBeALiveInTheNextGeneration(grid, cellCoords);
+            var actual = Rules.CurrentlyAliveCellWillStillBeALiveInTheNextGeneration(grid, cellCoords);
 
             // Assert
             Assert.That(actual, Is.False);
@@ -50,7 +50,7 @@ namespace GameOfLifeTests
             grid.MarkLiveCellAt(cellCoords.Below());
 
             // Act
-            var actual = Rules.WillCurrentlyAliveCellBeALiveInTheNextGeneration(grid, cellCoords);
+            var actual = Rules.CurrentlyAliveCellWillStillBeALiveInTheNextGeneration(grid, cellCoords);
 
             // Assert
             Assert.That(actual, Is.True);
@@ -68,7 +68,7 @@ namespace GameOfLifeTests
             grid.MarkLiveCellAt(cellCoords.BelowLeft());
 
             // Act
-            var actual = Rules.WillCurrentlyAliveCellBeALiveInTheNextGeneration(grid, cellCoords);
+            var actual = Rules.CurrentlyAliveCellWillStillBeALiveInTheNextGeneration(grid, cellCoords);
 
             // Assert
             Assert.That(actual, Is.True);
@@ -87,7 +87,7 @@ namespace GameOfLifeTests
             grid.MarkLiveCellAt(cellCoords.BelowRight());
 
             // Act
-            var actual = Rules.WillCurrentlyAliveCellBeALiveInTheNextGeneration(grid, cellCoords);
+            var actual = Rules.CurrentlyAliveCellWillStillBeALiveInTheNextGeneration(grid, cellCoords);
 
             // Assert
             Assert.That(actual, Is.False);
@@ -104,7 +104,7 @@ namespace GameOfLifeTests
             grid.MarkLiveCellAt(cellCoords.BelowLeft());
 
             // Act
-            var actual = Rules.WillCurrentlyDeadCellBecomeALiveInTheNextGeneration(grid, cellCoords);
+            var actual = Rules.CurrentlyDeadCellWillBecomeALiveInTheNextGeneration(grid, cellCoords);
 
             // Assert
             Assert.That(actual, Is.True);
@@ -120,7 +120,7 @@ namespace GameOfLifeTests
             grid.MarkLiveCellAt(cellCoords.BelowLeft());
 
             // Act
-            var actual = Rules.WillCurrentlyDeadCellBecomeALiveInTheNextGeneration(grid, cellCoords);
+            var actual = Rules.CurrentlyDeadCellWillBecomeALiveInTheNextGeneration(grid, cellCoords);
 
             // Assert
             Assert.That(actual, Is.False);

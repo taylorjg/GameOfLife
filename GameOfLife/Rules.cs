@@ -10,7 +10,7 @@ namespace GameOfLife
 
             currentGrid.IterateLiveCells((coords, cellState) =>
             {
-                if (WillCurrentlyAliveCellBeALiveInTheNextGeneration(currentGrid, coords))
+                if (CurrentlyAliveCellWillStillBeALiveInTheNextGeneration(currentGrid, coords))
                 {
                     nextGrid.MarkLiveCellAt(coords);
                 }
@@ -23,7 +23,7 @@ namespace GameOfLife
                 {
                     if (!currentGrid.IsLiveCellAt(neighbour))
                     {
-                        if (WillCurrentlyDeadCellBecomeALiveInTheNextGeneration(currentGrid, neighbour))
+                        if (CurrentlyDeadCellWillBecomeALiveInTheNextGeneration(currentGrid, neighbour))
                         {
                             if (currentGrid.CellWasPreviouslyAliveAt(neighbour))
                             {
@@ -46,7 +46,7 @@ namespace GameOfLife
         // Any live cell with more than three live neighbours dies, as if by overcrowding.
         // Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
 
-        internal static bool WillCurrentlyAliveCellBeALiveInTheNextGeneration(Grid currentGrid, Coords coords)
+        internal static bool CurrentlyAliveCellWillStillBeALiveInTheNextGeneration(Grid currentGrid, Coords coords)
         {
             var numLiveNeighbours = GetNumLiveNeighbours(currentGrid, coords);
 
@@ -54,7 +54,7 @@ namespace GameOfLife
             return (numLiveNeighbours == 2 || numLiveNeighbours == 3);
         }
 
-        internal static bool WillCurrentlyDeadCellBecomeALiveInTheNextGeneration(Grid currentGrid, Coords coords)
+        internal static bool CurrentlyDeadCellWillBecomeALiveInTheNextGeneration(Grid currentGrid, Coords coords)
         {
             var numLiveNeighbours = GetNumLiveNeighbours(currentGrid, coords);
 
