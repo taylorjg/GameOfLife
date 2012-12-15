@@ -115,7 +115,7 @@ namespace GameOfLifeTests
             universe.Tick();
 
             var coordsOfLiveCells = new List<Coords>();
-            universe.IterateLiveCells(coordsOfLiveCells.Add);
+            universe.IterateLiveCells((coords, cellState) => coordsOfLiveCells.Add(coords));
 
             Assert.That(setOfExpectedCoords, Is.Unique);
             Assert.That(coordsOfLiveCells, Is.Unique);

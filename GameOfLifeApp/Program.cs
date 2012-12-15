@@ -25,6 +25,8 @@ namespace GameOfLifeApp
         private const int MaxOffsetFromOriginY = 32;
         private const int OverallBoardSizeX = MaxOffsetFromOriginX * 2 + 1;
         private const int OverallBoardSizeY = MaxOffsetFromOriginY * 2 + 1;
+        private const int DefaultSeedChoice = 4;
+        private const int DefaultTickSleepInterval = 100;
 
         private static bool _exitAtNextIteration;
         private static HandlerRoutine _consoleCtrlHandler;
@@ -33,10 +35,23 @@ namespace GameOfLifeApp
         {
             var universe = new Universe();
 
-            int seedChoice;
-            if (args.Length != 1 || !int.TryParse(args[0], out seedChoice))
+            var seedChoice = DefaultSeedChoice;
+            var tickSleepInterval = DefaultTickSleepInterval;
+
+            if (args.Length >= 1)
             {
-                seedChoice = 0;
+                if (!int.TryParse(args[0], out seedChoice))
+                {
+                    seedChoice = DefaultSeedChoice;
+                }
+            }
+
+            if (args.Length == 2)
+            {
+                if (!int.TryParse(args[1], out tickSleepInterval))
+                {
+                    tickSleepInterval = DefaultTickSleepInterval;
+                }
             }
 
             switch (seedChoice)
@@ -86,7 +101,7 @@ namespace GameOfLifeApp
 
             for (; DrawBoundedUniverse(universe) && !_exitAtNextIteration; )
             {
-                System.Threading.Thread.Sleep(100);
+                System.Threading.Thread.Sleep(tickSleepInterval);
                 universe.Tick();
             }
 
@@ -321,18 +336,18 @@ namespace GameOfLifeApp
             Console.SetCursorPosition(0, OverallBoardSizeY - 1);
         }
 
-        private static IList<Coords> _previousSetOfLiveCells;
+        private static IDictionary<Coords, CellState> _previousSetOfLiveCells;
 
         private static bool DrawBoundedUniverse(Universe universe)
         {
-            var nextSetOfLiveCells = new List<Coords>();
+            var nextSetOfLiveCells = new Dictionary<Coords, CellState>();
 
-            universe.IterateLiveCells(coords =>
+            universe.IterateLiveCells((coords, cellState) =>
                                           {
                                               if (Math.Abs(coords.X) <= MaxOffsetFromOriginX &&
                                                   Math.Abs(coords.Y) <= MaxOffsetFromOriginY)
                                               {
-                                                  nextSetOfLiveCells.Add(coords);
+                                                  nextSetOfLiveCells.Add(coords, cellState);
                                               }
                                           });
 
@@ -344,41 +359,50 @@ namespace GameOfLifeApp
             return nextSetOfLiveCells.Any();
         }
 
-        private static void DrawCellsThatHaveComeAlive(ICollection<Coords> previousSetOfLiveCells, IEnumerable<Coords> nextSetOfLiveCells)
+        private static void DrawCellsThatHaveComeAlive(
+            IDictionary<Coords, CellState> previousSetOfLiveCells,
+            IEnumerable<KeyValuePair<Coords, CellState>> nextSetOfLiveCells)
         {
-            foreach (var coords in nextSetOfLiveCells)
+            foreach (var kvp in nextSetOfLiveCells)
             {
                 var drawCell = true;
 
                 if (previousSetOfLiveCells != null)
                 {
-                    drawCell = !previousSetOfLiveCells.Contains(coords);
+                    drawCell = !previousSetOfLiveCells.ContainsKey(kvp.Key);
                 }
 
                 if (drawCell)
                 {
-                    DrawCell(coords);
+                    DrawCell(kvp.Key, kvp.Value);
                 }
             }
         }
 
-        private static void EraseCellsThatHaveDied(IEnumerable<Coords> previousSetOfLiveCells, ICollection<Coords> nextSetOfLiveCells)
+        private static void EraseCellsThatHaveDied(
+            IEnumerable<KeyValuePair<Coords, CellState>> previousSetOfLiveCells,
+            IDictionary<Coords, CellState> nextSetOfLiveCells)
         {
             if (previousSetOfLiveCells != null)
             {
-                foreach (var coords in previousSetOfLiveCells)
+                foreach (var kvp in previousSetOfLiveCells)
                 {
-                    if (!nextSetOfLiveCells.Contains(coords))
+                    if (!nextSetOfLiveCells.ContainsKey(kvp.Key))
                     {
-                        EraseCell(coords);
+                        EraseCell(kvp.Key);
                     }
                 }
             }
         }
 
-        private static void DrawCell(Coords gridCoords)
+        private static void DrawCell(Coords gridCoords, CellState cellState)
         {
+            var savedForegroundColor = Console.ForegroundColor;
+
+            Console.ForegroundColor = cellState.IsZombie ? ConsoleColor.Magenta : ConsoleColor.Cyan;
             DrawCharacter(gridCoords, 'X');
+
+            Console.ForegroundColor = savedForegroundColor;
         }
 
         private static void EraseCell(Coords gridCoords)

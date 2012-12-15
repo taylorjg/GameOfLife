@@ -46,7 +46,7 @@ namespace GameOfLifeTests
             var numInvocations = 0;
 
             // Act
-            grid.IterateLiveCells(_ => numInvocations++);
+            grid.IterateLiveCells((_, __) => numInvocations++);
 
             // Assert
             Assert.That(numInvocations, Is.EqualTo(1));
@@ -62,7 +62,7 @@ namespace GameOfLifeTests
             var numInvocations = 0;
 
             // Act
-            grid.IterateLiveCells(_ => numInvocations++);
+            grid.IterateLiveCells((_, __) => numInvocations++);
 
             // Assert
             Assert.That(numInvocations, Is.EqualTo(2));
@@ -79,7 +79,7 @@ namespace GameOfLifeTests
             var numInvocations = 0;
 
             // Act
-            grid.IterateLiveCells(_ => numInvocations++);
+            grid.IterateLiveCells((_, __) => numInvocations++);
 
             // Assert
             Assert.That(numInvocations, Is.EqualTo(1));

@@ -13,16 +13,31 @@ namespace GameOfLife
             _cells[coords] = CellState.AliveCellState();
         }
 
+        public void MarkWasPreviouslyAliveCellAt(Coords coords)
+        {
+            _cells[coords] = CellState.WasPreviouslyAliveCellState();
+        }
+
+        public void MarkZombieCellAt(Coords coords)
+        {
+            _cells[coords] = CellState.ZombieCellState();
+        }
+
         public bool IsLiveCellAt(Coords coords)
         {
             return _cells.ContainsKey(coords) && _cells[coords].IsAlive;
         }
 
-        public void IterateLiveCells(Action<Coords> action)
+        public bool CellWasPreviouslyAliveAt(Coords coords)
         {
-            foreach (var coords in _cells.Keys.Where(IsLiveCellAt))
+            return _cells.ContainsKey(coords) && _cells[coords].WasPreviouslyAlive;
+        }
+
+        public void IterateLiveCells(Action<Coords, CellState> action)
+        {
+            foreach (var kvp in _cells.Where(kvp => IsLiveCellAt(kvp.Key)))
             {
-                action(coords);
+                action(kvp.Key, kvp.Value);
             }
         }
     }

@@ -16,7 +16,7 @@ namespace GameOfLife
             _grid = Rules.NextGeneration(_grid);
         }
 
-        public void IterateLiveCells(Action<Coords> action)
+        public void IterateLiveCells(Action<Coords, CellState> action)
         {
             _grid.IterateLiveCells(action);
         }

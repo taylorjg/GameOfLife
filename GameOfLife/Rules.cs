@@ -8,11 +8,15 @@ namespace GameOfLife
         {
             var nextGrid = new Grid();
 
-            currentGrid.IterateLiveCells(coords =>
+            currentGrid.IterateLiveCells((coords, cellState) =>
             {
                 if (WillCurrentlyAliveCellBeALiveInTheNextGeneration(currentGrid, coords))
                 {
                     nextGrid.MarkLiveCellAt(coords);
+                }
+                else
+                {
+                    nextGrid.MarkWasPreviouslyAliveCellAt(coords);
                 }
 
                 foreach (var neighbour in coords.Neighbours())
@@ -21,7 +25,14 @@ namespace GameOfLife
                     {
                         if (WillCurrentlyDeadCellBecomeALiveInTheNextGeneration(currentGrid, neighbour))
                         {
-                            nextGrid.MarkLiveCellAt(neighbour);
+                            if (currentGrid.CellWasPreviouslyAliveAt(neighbour))
+                            {
+                                nextGrid.MarkZombieCellAt(neighbour);
+                            }
+                            else
+                            {
+                                nextGrid.MarkLiveCellAt(neighbour);
+                            }
                         }
                     }
                 }
