@@ -1,10 +1,33 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using GameOfLife;
 
 namespace GameOfLifeApp
 {
     internal class Program
     {
+        [DllImport("Kernel32")]
+        public static extern bool SetConsoleCtrlHandler(HandlerRoutine handler, bool add);
+        public delegate bool HandlerRoutine(CtrlTypes ctrlType);
+
+        public enum CtrlTypes
+        {
+            CtrlCEvent = 0,
+            CtrlBreakEvent = 1,
+            CtrlCloseEvent = 2,
+            CtrlLogoffEvent = 5,
+            CtrlShutdownEvent = 6
+        }
+
+        private const int MaxOffsetFromOriginX = 50;
+        private const int MaxOffsetFromOriginY = 32;
+        private const int OverallBoardSizeX = MaxOffsetFromOriginX * 2 + 1;
+        private const int OverallBoardSizeY = MaxOffsetFromOriginY * 2 + 1;
+
+        private static bool _exitAtNextIteration;
+        private static HandlerRoutine _consoleCtrlHandler;
+
         private static void Main(string[] args)
         {
             var universe = new Universe();
@@ -54,11 +77,30 @@ namespace GameOfLifeApp
                     break;
             }
 
-            for (; DrawBoundedUniverse(universe); )
+            // http://stackoverflow.com/questions/6783561/nullreferenceexception-with-no-stack-trace-when-hooking-setconsolectrlhandler
+            _consoleCtrlHandler = consoleCtrlHandler;
+            SetConsoleCtrlHandler(_consoleCtrlHandler, true);
+
+            InitialiseConsole();
+
+            for (; DrawBoundedUniverse(universe) && !_exitAtNextIteration; )
             {
                 System.Threading.Thread.Sleep(100);
                 universe.Tick();
             }
+
+            RestoreConsole();
+        }
+
+        private static bool consoleCtrlHandler(CtrlTypes ctrltype)
+        {
+            if (ctrltype == CtrlTypes.CtrlCEvent)
+            {
+                _exitAtNextIteration = true;
+                return true;
+            }
+
+            return false;
         }
 
         private static void SeedWithBlinker(Universe universe)
@@ -267,37 +309,85 @@ namespace GameOfLifeApp
             universe.AddSeedCellAt(Coords.Create(originX + 35, originY + 3));
         }
 
+        private static void InitialiseConsole()
+        {
+            Console.SetWindowSize(OverallBoardSizeX, OverallBoardSizeY);
+            Console.Clear();
+        }
+
+        private static void RestoreConsole()
+        {
+            Console.SetCursorPosition(0, OverallBoardSizeY - 1);
+        }
+
+        private static IList<Coords> _lastSetOfLiveCells;
+
         private static bool DrawBoundedUniverse(Universe universe)
         {
-            const int maxOffsetFromOrigin = 32;
-            const int overallBoardSize = maxOffsetFromOrigin * 2 + 1;
             var numLiveCellsWithinBounds = 0;
-            var cells = new bool[overallBoardSize, overallBoardSize];
+
+            var thisSetOfLiveCells = new List<Coords>();
 
             universe.IterateLiveCells(
                 coords =>
                 {
-                    if (Math.Abs(coords.X) <= maxOffsetFromOrigin &&
-                        Math.Abs(coords.Y) <= maxOffsetFromOrigin)
+                    if (Math.Abs(coords.X) <= MaxOffsetFromOriginX && Math.Abs(coords.Y) <= MaxOffsetFromOriginY)
                     {
-                        cells[maxOffsetFromOrigin + coords.X, maxOffsetFromOrigin + coords.Y] = true;
+                        var drawCell = true;
+
+                        if (_lastSetOfLiveCells != null)
+                        {
+                            drawCell = !_lastSetOfLiveCells.Contains(coords);
+                        }
+
+                        if (drawCell)
+                        {
+                            DrawCell(coords);
+                        }
+
                         numLiveCellsWithinBounds++;
+                        thisSetOfLiveCells.Add(coords);
                     }
                 });
 
-            for (var row = overallBoardSize - 1; row >= 0; row--)
+            if (_lastSetOfLiveCells != null)
             {
-                var line = string.Empty;
-                for (var col = 0; col < overallBoardSize; col++)
+                foreach (var coords in _lastSetOfLiveCells)
                 {
-                    line += cells[col, row] ? "X" : " ";
+                    if (!thisSetOfLiveCells.Contains(coords))
+                    {
+                        EraseCell(coords);
+                    }
                 }
-                Console.WriteLine(line);
             }
 
-            Console.WriteLine();
+            _lastSetOfLiveCells = thisSetOfLiveCells;
 
             return numLiveCellsWithinBounds > 0;
+        }
+
+        private static void DrawCell(Coords gridCoords)
+        {
+            DrawCharacter(gridCoords, 'X');
+        }
+
+        private static void EraseCell(Coords gridCoords)
+        {
+            DrawCharacter(gridCoords, ' ');
+        }
+
+        private static void DrawCharacter(Coords gridCoords, char character)
+        {
+            var consoleCoords = GridCoordsToConsoleCoords(gridCoords);
+            Console.SetCursorPosition(consoleCoords.X, consoleCoords.Y);
+            Console.Write(character);
+        }
+
+        private static Coords GridCoordsToConsoleCoords(Coords coords)
+        {
+            return Coords.Create(
+                MaxOffsetFromOriginX + coords.X,
+                OverallBoardSizeY - MaxOffsetFromOriginY - coords.Y - 1);
         }
     }
 }
