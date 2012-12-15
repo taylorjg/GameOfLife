@@ -35,6 +35,10 @@ If no parameter is given, the seed defaults to Pulsar.
 
 ## Screenshot of the running program
 
+The following screenshot shows the R-pentomino seed after is has stabilised:
+
 ![Screenshot1](https://github.com/taylorjg/GameOfLife/raw/master/Images/GameOfLifeAppConsole1.png)
+
+The following screenshot shows the Gun seed in action:
 
 ![Screenshot2](https://github.com/taylorjg/GameOfLife/raw/master/Images/GameOfLifeAppConsole2.png)
