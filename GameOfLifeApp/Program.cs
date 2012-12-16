@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using GameOfLife;
 
 namespace GameOfLifeApp
@@ -40,20 +41,22 @@ namespace GameOfLifeApp
 
             InitialiseConsole();
 
-            ConsoleCtrlHandler.RunUntilCtrlC(() =>
-                                     {
-                                         if (!DrawBoundedUniverse(universe))
-                                         {
-                                             return ConsoleCtrlHandler.RunLoopResult.Quit;
-                                         }
-
-                                         System.Threading.Thread.Sleep(tickSleepInterval);
-                                         universe.Tick();
-
-                                         return ConsoleCtrlHandler.RunLoopResult.KeepGoing;
-                                     });
+            ConsoleCtrlHandler.RunUntilCtrlC(() => RunLoop(universe, tickSleepInterval));
 
             RestoreConsole();
+        }
+
+        private static ConsoleCtrlHandler.RunLoopResult RunLoop(Universe universe, int tickSleepInterval)
+        {
+            if (!DrawBoundedUniverse(universe))
+            {
+                return ConsoleCtrlHandler.RunLoopResult.Quit;
+            }
+
+            Thread.Sleep(tickSleepInterval);
+            universe.Tick();
+
+            return ConsoleCtrlHandler.RunLoopResult.KeepGoing;
         }
 
         private static void InitialiseConsole()
