@@ -39,7 +39,7 @@ The optional second parameter controls the sleep interval between ticks. It defa
 
 ## Screenshot of the Running Program
 
-The following screenshot shows the R-pentomino seed after is has stabilised:
+The following screenshot shows the R-pentomino seed after it has stabilised:
 
 ![Screenshot1](https://github.com/taylorjg/GameOfLife/raw/master/Images/GameOfLifeAppConsole1.png)
 
