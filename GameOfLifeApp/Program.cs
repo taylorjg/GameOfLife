@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using GameOfLife;
 
@@ -70,78 +68,47 @@ namespace GameOfLifeApp
             Console.SetCursorPosition(0, OverallBoardSizeY - 2);
         }
 
-        private static IDictionary<Coords, CellState> _previousSetOfLiveCells;
-
         private static bool DrawBoundedUniverse(Universe universe)
         {
-            var nextSetOfLiveCells = new Dictionary<Coords, CellState>();
+            universe.IterateCellsThatHaveComeAlive(DrawCell);
+            universe.IterateCellsThatHaveDied(EraseCell);
+            return SomeLiveCellsAreWithinBounds(universe);
+        }
+
+        private static bool SomeLiveCellsAreWithinBounds(Universe universe)
+        {
+            var result = false;
 
             universe.IterateLiveCells((coords, cellState) =>
                                           {
-                                              if (Math.Abs(coords.X) <= MaxOffsetFromOriginX &&
-                                                  Math.Abs(coords.Y) <= MaxOffsetFromOriginY)
+                                              if (GridCoordsAreWithinBounds(coords))
                                               {
-                                                  nextSetOfLiveCells.Add(coords, cellState);
+                                                  result = true;
                                               }
                                           });
 
-            DrawCellsThatHaveComeAlive(_previousSetOfLiveCells, nextSetOfLiveCells);
-            EraseCellsThatHaveDied(_previousSetOfLiveCells, nextSetOfLiveCells);
-
-            _previousSetOfLiveCells = nextSetOfLiveCells;
-
-            return nextSetOfLiveCells.Any();
-        }
-
-        private static void DrawCellsThatHaveComeAlive(
-            IDictionary<Coords, CellState> previousSetOfLiveCells,
-            IEnumerable<KeyValuePair<Coords, CellState>> nextSetOfLiveCells)
-        {
-            foreach (var kvp in nextSetOfLiveCells)
-            {
-                var drawCell = true;
-
-                if (previousSetOfLiveCells != null)
-                {
-                    drawCell = !previousSetOfLiveCells.ContainsKey(kvp.Key);
-                }
-
-                if (drawCell)
-                {
-                    DrawCell(kvp.Key, kvp.Value);
-                }
-            }
-        }
-
-        private static void EraseCellsThatHaveDied(
-            IEnumerable<KeyValuePair<Coords, CellState>> previousSetOfLiveCells,
-            IDictionary<Coords, CellState> nextSetOfLiveCells)
-        {
-            if (previousSetOfLiveCells != null)
-            {
-                foreach (var kvp in previousSetOfLiveCells)
-                {
-                    if (!nextSetOfLiveCells.ContainsKey(kvp.Key))
-                    {
-                        EraseCell(kvp.Key);
-                    }
-                }
-            }
+            return result;
         }
 
         private static void DrawCell(Coords gridCoords, CellState cellState)
         {
-            var savedForegroundColor = Console.ForegroundColor;
+            if (GridCoordsAreWithinBounds(gridCoords))
+            {
+                var savedForegroundColor = Console.ForegroundColor;
 
-            Console.ForegroundColor = cellState.IsZombie ? ConsoleColor.Magenta : ConsoleColor.Cyan;
-            DrawCharacter(gridCoords, 'X');
+                Console.ForegroundColor = cellState.IsZombie ? ConsoleColor.Magenta : ConsoleColor.Cyan;
+                DrawCharacter(gridCoords, 'X');
 
-            Console.ForegroundColor = savedForegroundColor;
+                Console.ForegroundColor = savedForegroundColor;
+            }
         }
 
-        private static void EraseCell(Coords gridCoords)
+        private static void EraseCell(Coords gridCoords, CellState cellState)
         {
-            DrawCharacter(gridCoords, ' ');
+            if (GridCoordsAreWithinBounds(gridCoords))
+            {
+                DrawCharacter(gridCoords, ' ');
+            }
         }
 
         private static void DrawCharacter(Coords gridCoords, char character)
@@ -149,6 +116,12 @@ namespace GameOfLifeApp
             var consoleCoords = GridCoordsToConsoleCoords(gridCoords);
             Console.SetCursorPosition(consoleCoords.X, consoleCoords.Y);
             Console.Write(character);
+        }
+
+        private static bool GridCoordsAreWithinBounds(Coords gridCoords)
+        {
+            return Math.Abs(gridCoords.X) <= MaxOffsetFromOriginX &&
+                   Math.Abs(gridCoords.Y) <= MaxOffsetFromOriginY;
         }
 
         private static Coords GridCoordsToConsoleCoords(Coords coords)
